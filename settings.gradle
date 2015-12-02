@@ -1,0 +1,3 @@
+include ':truetime'
+rootProject.name = "truetime-parent"
+

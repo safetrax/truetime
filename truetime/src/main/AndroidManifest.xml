@@ -1,0 +1,8 @@
+<manifest package="in.mtap.iincube.chronos"
+          xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <service android:name="in.mtap.iincube.truetime.TimeSyncIntentService"/>
+    </application>
+
+</manifest>
