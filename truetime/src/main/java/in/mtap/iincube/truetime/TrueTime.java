@@ -1,30 +1,21 @@
 package in.mtap.iincube.truetime;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.support.annotation.NonNull;
+import android.os.SystemClock;
 
-import static android.content.Context.CONNECTIVITY_SERVICE;
+import java.util.Date;
 
 public class TrueTime {
-
-  private Context context;
-  private static Listener listener;
-  private static SharedPrefClient sharedPrefClient;
-  private static boolean isPending = false;
   private static TrueTime singleton = null;
 
-  final TimeChangedReceiver timeChangedReceiver = new TimeChangedReceiver();
-  final NetworkStateReceiver networkStateReceiver = new NetworkStateReceiver();
+  private static SyncTask listener = null;
+  private SharedPrefClient sharedPrefClient;
+  private Context context;
 
   private TrueTime(Context context) {
-    TrueTime.sharedPrefClient = new SharedPrefClient(context);
     this.context = context;
-    listen();
+    this.sharedPrefClient = SharedPrefClient.get(context);
   }
 
   public static TrueTime with(Context context) {
@@ -34,72 +25,37 @@ public class TrueTime {
     return singleton;
   }
 
-  private void listen() {
-    IntentFilter timeFilter = new IntentFilter();
-    timeFilter.addAction(Intent.ACTION_TIME_CHANGED);
-    timeFilter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
-    context.registerReceiver(timeChangedReceiver, timeFilter);
-    IntentFilter networkFilter = new IntentFilter();
-    networkFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-    context.registerReceiver(networkStateReceiver, networkFilter);
+  public boolean isTrue() {
+    return sharedPrefClient.isTimeSynced();
   }
 
-  public void shutDown() {
-    try {
-      context.unregisterReceiver(timeChangedReceiver);
-      context.unregisterReceiver(networkStateReceiver);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    singleton = null;
+  public Date getCurrentTime() {
+    return new Date(SystemClock.elapsedRealtime() + sharedPrefClient.getServerTimeInMillis()
+        - sharedPrefClient.getElapsedOffsetInMillis());
   }
 
-  public void setListener(@NonNull Listener listener) {
-    this.listener = listener;
+  public Date getTrueDate(Date date) {
+    return new Date(date.getTime() + getOffset());
   }
 
-  public static Long getOffset() {
-    return sharedPrefClient.getOffset();
-  }
-
-  static Listener getListener() {
+  static SyncTask getSyncTask() {
     return listener;
   }
 
-  static SharedPrefClient getSharedPrefClient() {
-    return sharedPrefClient;
+  public void setSyncTask(SyncTask listener) {
+    TrueTime.listener = listener;
   }
 
-  static boolean isPending() {
-    return isPending;
-  }
-
-  static void setPending(boolean isPending) {
-    TrueTime.isPending = isPending;
-  }
-
-  private class TimeChangedReceiver extends BroadcastReceiver {
-    @Override public void onReceive(Context context, Intent intent) {
-      doInBackground();
-    }
-  }
-
-  private class NetworkStateReceiver extends BroadcastReceiver {
-    @Override public void onReceive(Context context, Intent intent) {
-      ConnectivityManager manager = (ConnectivityManager) context.getSystemService(
-          CONNECTIVITY_SERVICE);
-      NetworkInfo networkInfo = manager.getActiveNetworkInfo();
-      if (networkInfo != null && networkInfo.isConnected() && isPending)
-        doInBackground();
-    }
-  }
-
-  private void doInBackground() {
-    Intent intent = new Intent(context, TimeChangeListener.class);
+  public void forceSync() {
+    Intent intent = new Intent(context, TimeSyncIntentService.class);
     context.startService(intent);
   }
 
-  interface Listener {
-    void onTimeChanged();
+  private long getOffset() {
+    return (getCurrentTime().getTime() - new Date().getTime());
+  }
+
+  interface SyncTask {
+    void doSync(Context context);
   }
 }

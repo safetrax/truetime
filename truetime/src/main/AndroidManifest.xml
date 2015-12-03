@@ -1,7 +1,13 @@
-<manifest package="in.mtap.iincube.chronos"
-          xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest
+    package="in.mtap.iincube.truetime"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application>
+        <receiver android:name="in.mtap.iincube.truetime.BootCompleteReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
         <service android:name="in.mtap.iincube.truetime.TimeSyncIntentService"/>
     </application>
 

@@ -9,7 +9,7 @@ public class TimeSyncIntentService extends IntentService {
   }
 
   @Override protected void onHandleIntent(Intent intent) {
-    if (TrueTime.isPending() && TrueTime.getListener() != null)
-      TrueTime.getListener().onTimeChanged();
+    if (TrueTime.getSyncTask() != null)
+      TrueTime.getSyncTask().doSync(this);
   }
 }
