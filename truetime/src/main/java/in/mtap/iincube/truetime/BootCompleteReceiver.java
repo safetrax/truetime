@@ -7,8 +7,8 @@ import android.content.Intent;
 public class BootCompleteReceiver extends BroadcastReceiver {
   @Override public void onReceive(Context context, Intent intent) {
     SharedPrefClient sharedPrefClient = SharedPrefClient.get(context);
-    sharedPrefClient.setTimeSynced(false);
-    Intent timeSyncIntent = new Intent(context, TimeSyncIntentService.class);
-    context.startService(timeSyncIntent);
+    sharedPrefClient.setTimeAvailable(false);
+    Intent timeFetchIntent = new Intent(context, TimeFetchIntentService.class);
+    context.startService(timeFetchIntent);
   }
 }

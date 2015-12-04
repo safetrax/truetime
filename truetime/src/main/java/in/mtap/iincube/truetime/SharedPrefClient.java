@@ -5,7 +5,7 @@ import android.content.SharedPreferences;
 
 class SharedPrefClient {
   private static final String PREF_NAME = "true_time";
-  private static final String IS_SYNCED = "is_synced";
+  private static final String IS_TIME_AVAILABLE = "is_time_available";
   private static final String SERVER_TIME = "server_time";
   private static final String ELAPSED_OFFSET = "elapsed_offset";
 
@@ -23,12 +23,12 @@ class SharedPrefClient {
     return sharedPrefClient;
   }
 
-  public boolean isTimeSynced() {
-    return sharedPreferences.getBoolean(IS_SYNCED, false);
+  public boolean isTimeAvailable() {
+    return sharedPreferences.getBoolean(IS_TIME_AVAILABLE, false);
   }
 
-  public void setTimeSynced(boolean isSynced) {
-    sharedPreferences.edit().putBoolean(IS_SYNCED, isSynced).apply();
+  public void setTimeAvailable(boolean isSynced) {
+    sharedPreferences.edit().putBoolean(IS_TIME_AVAILABLE, isSynced).apply();
   }
 
   public long getServerTimeInMillis() {

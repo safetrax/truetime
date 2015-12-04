@@ -7,55 +7,58 @@ import android.os.SystemClock;
 import java.util.Date;
 
 public class TrueTime {
-  private static TrueTime singleton = null;
+  private static final String DEFAULT_URL = "http://in.pool.ntp.org";
 
-  private static SyncTask listener = null;
-  private SharedPrefClient sharedPrefClient;
   private Context context;
+  private TimeFetcher timeFetcher;
+  private SharedPrefClient sharedPrefClient;
 
-  private TrueTime(Context context) {
+  private static TrueTime instance = null;
+
+  TrueTime(Context context, TimeFetcher timeFetcher) {
     this.context = context;
     this.sharedPrefClient = SharedPrefClient.get(context);
+    this.timeFetcher = timeFetcher;
+    TrueTime.instance = this;
   }
 
-  public static TrueTime with(Context context) {
-    if (singleton == null) {
-      singleton = new TrueTime(context);
-    }
-    return singleton;
+  public static TrueTime init(Context context) {
+    return new TrueTime(context, new DefaultTimeFetcher(DEFAULT_URL));
   }
 
-  public boolean isTrue() {
-    return sharedPrefClient.isTimeSynced();
+  public static TrueTime initWith(Context context, String fetchFromRestUrl) {
+    return new TrueTime(context, new DefaultTimeFetcher(fetchFromRestUrl));
   }
 
-  public Date getCurrentTime() {
-    return new Date(SystemClock.elapsedRealtime() + sharedPrefClient.getServerTimeInMillis()
-        - sharedPrefClient.getElapsedOffsetInMillis());
+  public static TrueTime initWith(Context context, TimeFetcher timeFetcher) {
+    return new TrueTime(context, timeFetcher);
   }
 
-  public Date getTrueDate(Date date) {
-    return new Date(date.getTime() + getOffset());
+  public boolean isAvailable() {
+    return sharedPrefClient.isTimeAvailable();
   }
 
-  static SyncTask getSyncTask() {
-    return listener;
+  public long getTimeInMillis() {
+    return SystemClock.elapsedRealtime() + sharedPrefClient.getServerTimeInMillis()
+        - sharedPrefClient.getElapsedOffsetInMillis();
   }
 
-  public void setSyncTask(SyncTask listener) {
-    TrueTime.listener = listener;
+  public Date getDate() {
+    return new Date(getTimeInMillis());
+  }
+
+  public Date toSystemTime(Date date) {
+    return new Date(date.getTime() + getTimeInMillis() - new Date().getTime());
   }
 
   public void forceSync() {
-    Intent intent = new Intent(context, TimeSyncIntentService.class);
+    Intent intent = new Intent(context, TimeFetchIntentService.class);
     context.startService(intent);
   }
 
-  private long getOffset() {
-    return (getCurrentTime().getTime() - new Date().getTime());
-  }
-
-  interface SyncTask {
-    void doSync(Context context);
+  static TimeFetcher getTimeFetcher() {
+    if (instance == null)
+      return null;
+    return instance.timeFetcher;
   }
 }
