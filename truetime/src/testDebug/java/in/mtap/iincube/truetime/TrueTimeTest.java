@@ -21,13 +21,4 @@ public class TrueTimeTest {
     trueTime.fetchTime();
     verify(clock).setTime(1000L);
   }
-
-  @Test public void unsetOnIOError() throws IOException {
-    TimeFetcher timeFetcher = Mockito.mock(TimeFetcher.class);
-    Mockito.when(timeFetcher.fetchTime()).thenThrow(new IOException("Faking IO"));
-    Clock clock = Mockito.mock(Clock.class);
-    TrueTime trueTime = new TrueTime(null, timeFetcher, clock);
-    trueTime.fetchTime();
-    verify(clock).unset();
-  }
 }

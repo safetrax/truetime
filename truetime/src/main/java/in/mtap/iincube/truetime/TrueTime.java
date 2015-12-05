@@ -52,8 +52,7 @@ public class TrueTime {
   }
 
   public void fetchTimeAsync() {
-    Intent intent = new Intent(context, TimeFetchIntentService.class);
-    context.startService(intent);
+    fetchTimeAsync(context);
   }
 
   public void fetchTime() {
@@ -62,10 +61,16 @@ public class TrueTime {
 
   static void fetchTimeSync(Clock clock) {
     try {
+      clock.unset();
       long serverTime = timeFetcher.fetchTime();
       clock.setTime(serverTime);
     } catch (IOException e) {
-      clock.unset();
+      // decide when to reschedule to try another time.
     }
+  }
+
+  static void fetchTimeAsync(Context context) {
+    Intent intent = new Intent(context, TimeFetchIntentService.class);
+    context.startService(intent);
   }
 }
