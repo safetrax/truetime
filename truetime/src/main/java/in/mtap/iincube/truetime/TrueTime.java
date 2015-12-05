@@ -2,24 +2,25 @@ package in.mtap.iincube.truetime;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.SystemClock;
 
+import java.io.IOException;
 import java.util.Date;
 
 public class TrueTime {
-  private static final String DEFAULT_URL = "http://in.pool.ntp.org";
+  private static final String DEFAULT_URL = "http://google.com";
 
   private Context context;
-  private TimeFetcher timeFetcher;
-  private SharedPrefClient sharedPrefClient;
-
-  private static TrueTime instance = null;
+  private static TimeFetcher timeFetcher;
+  private Clock clockInstance;
 
   TrueTime(Context context, TimeFetcher timeFetcher) {
+    this(context, timeFetcher, new TrueClock(context));
+  }
+
+  TrueTime(Context context, TimeFetcher timeFetcher, Clock clock) {
     this.context = context;
-    this.sharedPrefClient = SharedPrefClient.get(context);
-    this.timeFetcher = timeFetcher;
-    TrueTime.instance = this;
+    TrueTime.timeFetcher = timeFetcher;
+    this.clockInstance = clock;
   }
 
   public static TrueTime init(Context context) {
@@ -35,12 +36,11 @@ public class TrueTime {
   }
 
   public boolean isAvailable() {
-    return sharedPrefClient.isTimeAvailable();
+    return clockInstance.isTimeSet();
   }
 
   public long getTimeInMillis() {
-    return SystemClock.elapsedRealtime() + sharedPrefClient.getServerTimeInMillis()
-        - sharedPrefClient.getElapsedOffsetInMillis();
+    return clockInstance.getTime();
   }
 
   public Date getDate() {
@@ -51,14 +51,21 @@ public class TrueTime {
     return new Date(date.getTime() + getTimeInMillis() - new Date().getTime());
   }
 
-  public void forceSync() {
+  public void fetchTimeAsync() {
     Intent intent = new Intent(context, TimeFetchIntentService.class);
     context.startService(intent);
   }
 
-  static TimeFetcher getTimeFetcher() {
-    if (instance == null)
-      return null;
-    return instance.timeFetcher;
+  public void fetchTime() {
+    fetchTimeSync(clockInstance);
+  }
+
+  static void fetchTimeSync(Clock clock) {
+    try {
+      long serverTime = timeFetcher.fetchTime();
+      clock.setTime(serverTime);
+    } catch (IOException e) {
+      clock.unset();
+    }
   }
 }

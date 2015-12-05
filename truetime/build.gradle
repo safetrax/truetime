@@ -32,6 +32,9 @@ dependencies {
     compile libraries.androidV7Support
 
     testCompile libraries.junit
+    testCompile libraries.truth
+    testCompile libraries.mockito
 }
 
 apply from: rootProject.file('gradle/libcheckstyle.gradle')
+apply from: rootProject.file('gradle/testopts.gradle')
