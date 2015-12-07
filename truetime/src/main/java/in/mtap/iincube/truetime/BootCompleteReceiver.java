@@ -6,6 +6,6 @@ import android.content.Intent;
 
 public class BootCompleteReceiver extends BroadcastReceiver {
   @Override public void onReceive(Context context, Intent intent) {
-    TrueTime.fetchTimeAsync(context);
+    TrueTime.downloadTimeInfoAsync(context);
   }
 }

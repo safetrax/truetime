@@ -18,7 +18,7 @@ public class TrueTimeTest {
   @Test public void fetchAndSetTime() throws IOException {
     Clock clock = Mockito.mock(Clock.class);
     TrueTime trueTime = getTrueTimeWithFetchTime(1000L, clock);
-    trueTime.fetchTime();
+    trueTime.downloadTimeInfo();
     verify(clock).setTime(1000L);
   }
 }

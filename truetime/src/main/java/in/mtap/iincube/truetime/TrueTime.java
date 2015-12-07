@@ -51,25 +51,21 @@ public class TrueTime {
     return new Date(date.getTime() + getTimeInMillis() - new Date().getTime());
   }
 
-  public void fetchTimeAsync() {
-    fetchTimeAsync(context);
+  public void downloadTimeInfoAsync() {
+    downloadTimeInfoAsync(context);
   }
 
-  public void fetchTime() {
-    fetchTimeSync(clockInstance);
+  public void downloadTimeInfo() throws IOException {
+    downloadTimeInfo(clockInstance);
   }
 
-  static void fetchTimeSync(Clock clock) {
-    try {
-      clock.unset();
-      long serverTime = timeFetcher.fetchTime();
-      clock.setTime(serverTime);
-    } catch (IOException e) {
-      // decide when to reschedule to try another time.
-    }
+  static void downloadTimeInfo(Clock clock) throws IOException {
+    clock.unset();
+    long serverTime = timeFetcher.fetchTime();
+    clock.setTime(serverTime);
   }
 
-  static void fetchTimeAsync(Context context) {
+  static void downloadTimeInfoAsync(Context context) {
     Intent intent = new Intent(context, TimeFetchIntentService.class);
     context.startService(intent);
   }
