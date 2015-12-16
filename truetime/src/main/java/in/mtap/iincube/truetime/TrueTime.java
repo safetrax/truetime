@@ -1,7 +1,10 @@
 package in.mtap.iincube.truetime;
 
 import android.content.Context;
-import android.content.Intent;
+
+import com.google.android.gms.gcm.GcmNetworkManager;
+import com.google.android.gms.gcm.OneoffTask;
+import com.google.android.gms.gcm.Task;
 
 import java.io.IOException;
 import java.util.Date;
@@ -66,7 +69,11 @@ public class TrueTime {
   }
 
   static void downloadTimeInfoAsync(Context context) {
-    Intent intent = new Intent(context, TimeFetchIntentService.class);
-    context.startService(intent);
+    Task timeSyncTask = new OneoffTask.Builder().setService(TimeSyncTask.class)
+        .setPersisted(false)
+        .setExecutionWindow(5, 60)
+        .setRequiresCharging(false)
+        .setTag("in.mtap.iincube.truetime_sync").build();
+    GcmNetworkManager.getInstance(context).schedule(timeSyncTask);
   }
 }
