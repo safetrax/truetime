@@ -12,53 +12,53 @@ import java.util.Date;
 public class TrueTime {
   private static final String DEFAULT_URL = "http://google.com";
 
-  private Context context;
+  private static Context context;
   private static TimeFetcher timeFetcher;
-  private Clock clockInstance;
+  private static Clock clockInstance;
 
-  TrueTime(Context context, TimeFetcher timeFetcher) {
-    this(context, timeFetcher, new TrueClock(context));
+  private TrueTime() {
+    throw new AssertionError("No instances allowed");
   }
 
-  TrueTime(Context context, TimeFetcher timeFetcher, Clock clock) {
-    this.context = context;
+  public static void init(Context context) {
+    initWith(context, DEFAULT_URL);
+  }
+
+  public static void initWith(Context context, String fetchFromRestUrl) {
+    initWith(context, new DefaultTimeFetcher(fetchFromRestUrl));
+  }
+
+  static void initWith(Context context, TimeFetcher timeFetcher, Clock clock) {
+    TrueTime.context = context;
     TrueTime.timeFetcher = timeFetcher;
-    this.clockInstance = clock;
+    TrueTime.clockInstance = clock;
   }
 
-  public static TrueTime init(Context context) {
-    return new TrueTime(context, new DefaultTimeFetcher(DEFAULT_URL));
+  public static void initWith(Context context, TimeFetcher timeFetcher) {
+    initWith(context, timeFetcher, new TrueClock(context));
   }
 
-  public static TrueTime initWith(Context context, String fetchFromRestUrl) {
-    return new TrueTime(context, new DefaultTimeFetcher(fetchFromRestUrl));
-  }
-
-  public static TrueTime initWith(Context context, TimeFetcher timeFetcher) {
-    return new TrueTime(context, timeFetcher);
-  }
-
-  public boolean isAvailable() {
+  public static boolean isAvailable() {
     return clockInstance.isTimeSet();
   }
 
-  public long getTimeInMillis() {
+  public static long getTimeInMillis() {
     return clockInstance.getTime();
   }
 
-  public Date getDate() {
+  public static Date getDate() {
     return new Date(getTimeInMillis());
   }
 
-  public Date toSystemTime(Date date) {
+  public static Date toSystemTime(Date date) {
     return new Date(date.getTime() + getTimeInMillis() - new Date().getTime());
   }
 
-  public void downloadTimeInfoAsync() {
+  public static void downloadTimeInfoAsync() {
     downloadTimeInfoAsync(context);
   }
 
-  public void downloadTimeInfo() throws IOException {
+  public static void downloadTimeInfo() throws IOException {
     downloadTimeInfo(clockInstance);
   }
 
