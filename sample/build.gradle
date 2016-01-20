@@ -7,7 +7,7 @@ buildscript {
     }
 }
 
-apply plugin: 'com.android.library'
+apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion parent.ext.compileSdkVersion
@@ -16,6 +16,7 @@ android {
     defaultConfig {
         minSdkVersion parent.ext.minSdkVersion
         targetSdkVersion parent.ext.targetSdkVersion
+        applicationId "in.mtap.iincube.safetrax.truetime.sample"
         versionCode 1
         versionName "1.0"
     }
@@ -29,12 +30,11 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    provided libraries.gcmPlayServices
+    compile libraries.gcmPlayServices
+    compile libraries.androidV7Support
+    compile project(':truetime')
 
     testCompile libraries.junit
     testCompile libraries.truth
     testCompile libraries.mockito
 }
-
-apply from: rootProject.file('gradle/libcheckstyle.gradle')
-apply from: rootProject.file('gradle/testopts.gradle')
